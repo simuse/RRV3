@@ -1,4 +1,4 @@
-Reddit-Roll-Angular
-===================
+Reddit-Roll Angular
+====
 
-A Reddit client in AngularJS
+

@@ -1,0 +1,18 @@
+{
+    "name": "",
+    "description": "",
+    "version": "0.0.1",
+    "keywords": ["", ""],
+    "homepage": "http://",
+    "author": "",
+
+    "devDependencies": {
+      "grunt":                "~0.4.2",
+      "grunt-contrib-jshint": "~0.6.4",
+      "grunt-contrib-uglify": "~0.2.4",
+      "grunt-contrib-watch":  "~0.5.3",
+      "grunt-recess":         "~0.4.0",
+      "grunt-htmlhint":       "*",
+      "matchdep":             "*"
+  	}
+}

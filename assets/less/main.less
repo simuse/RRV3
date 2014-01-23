@@ -1,0 +1,206 @@
+/*
+ * Table of contents
+ * -----------------
+ *
+ * - base
+ * - header
+ * - navigations
+ * - primary content
+ * - secondary content
+ * - footer
+ *
+ */
+
+@import 'bootstrap/bootstrap.less';
+@import 'animate.less';
+@import 'variables.less';
+@import 'helpers.less';
+
+/*=============================================================
+	=base
+==============================================================*/
+
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+a, input, textarea, button {
+	-webkit-transition: all 0.3s ease-out;
+	-moz-transition: all 0.3s ease-out;
+	-o-transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
+}
+
+p a { // Increase clickable area on links / http://joshnh.com/2012/09/06/increasing-the-clickable-area-of-inline-links/
+    margin: -.5em;
+    padding: .5em;
+    position: relative;
+}
+
+img {
+	width: 100%;
+	height: auto;
+}
+
+body {
+	font-family: 'Droid Sans', sans-serif;
+	position: relative;
+}
+
+/*=============================================================
+	=header
+==============================================================*/
+
+.navbar-brand {
+	font-weight: bold;
+}
+
+.page-nav {
+	margin-top: 8px;
+	float: left;
+}
+
+/*=============================================================
+	=navigation
+==============================================================*/
+
+/*=============================================================
+	=primary content
+==============================================================*/
+
+#main {
+	margin-top: 70px;
+}
+
+iframe {
+	width: 100%;
+}
+
+.post {
+	border: 1px solid @post-border;
+	background: @post-bg;
+	border-radius: @border-radius;
+	margin-bottom: 15px;
+
+	.post-header {
+		.title {
+			padding: 10px 10px 5px 10px;
+			margin: 0;
+		}
+		.meta {
+			border-top: 1px solid @post-border;
+			font-size: 12px;
+			margin: 0 10px;
+			padding: 5px 0;
+		}
+	}
+
+	img {
+		border-top: 1px solid @post-border;
+		border-bottom: 1px solid @post-border;
+	}
+
+	.post-footer {
+		padding: 10px;
+
+		.btn-comments {
+			i {
+				font-size: 16px;
+			}
+			span {
+				font-size: 11px;
+				margin: 0;
+				margin-top: -10px;
+			}
+		}
+	}
+}
+
+/*=============================================================
+	=secondary content
+==============================================================*/
+
+#comments {
+	width: 500px;
+	height: 500px;
+	right: -500px;
+	top: 50px;
+	position: fixed;
+	background: @post-bg;
+	border: 1px solid @post-border;
+	-webkit-transition: right 0.3s ease-out;
+	-moz-transition: right 0.3s ease-out;
+	-o-transition: right 0.3s ease-out;
+	transition: right 0.3s ease-out;
+	overflow-y: scroll;
+
+	&.showing {
+		right: 0;
+	}
+
+	.comments-header {
+		.clearfix;
+		padding: 10px;
+		border-bottom: 1px solid #aaa;
+		span {
+			display: inline-block;
+			width: 410px;
+			float: right;
+			font-weight: bold;
+		}
+	}
+
+	ul {
+		list-style: none;
+		padding: 10px;
+	
+		.comment {
+			font-size: 14px;
+			margin-bottom: 10px;
+			border-bottom: 1px solid @post-border;
+			padding-bottom: 5px;
+			.comment-header {
+				margin-bottom: -5px;
+				span {
+					font-size: 12px;
+					color: grey;
+				}
+			}
+
+			.sub-comments {
+				boreder-left: 5px solid red;
+				li {
+				background: red;
+					
+				}
+			}
+		}
+	}
+
+}
+
+.loader {
+	margin-left: 45%;
+	margin-top: 50px;
+	width: 30px;
+	height: 30px;
+}
+
+.ups {
+	color: @reddit-orange!important;
+}
+.downs {
+	color: @reddit-blue!important;
+}
+.date {
+	float: right;
+}
+
+/*=============================================================
+	=footer
+==============================================================*/
+
+@import 'media-queries.less';
+@import 'print.less';

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Reddit-Roll v3</title>
+	
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="assets/css/main.min.css">
+
+	<script src="assets/js/vendor/modernizr-2.6.2.min.js"></script>
+	<script src="assets/js/vendor/jquery-1.10.2.min.js"></script>
+	<script src="assets/js/vendor/angular-1.2.3.min.js"></script>
+	<script src="assets/js/vendor/angular-route.min.js"></script>
+</head>
+<body>
+	
+		
+		<div ng-controller="FrontPage">
+			
+			<header>
+				<nav class="navbar navbar-default navbar-fixed-top" id="nav">
+					<div class="container">
+
+						<div class="navbar-header">
+					    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="navbar-collapse">
+					      <span class="sr-only">Toggle navigation</span>
+					      <span class="icon-bar"></span>
+					      <span class="icon-bar"></span>
+					      <span class="icon-bar"></span>
+					    </button>
+					    <a class="navbar-brand" href="index.html">RRV3</a>
+					  </div> <!-- /.navbar-header -->
+
+					  <div class="collapse navbar-collapse navbar-left" id="navbar-collapse">
+
+					  	<ul class="nav navbar-nav">
+					  		<li><a href="">Settings</a></li>
+					  		<li><a href="">Multireddits</a></li>
+					  	</ul> <!-- /.navbar-nav -->
+
+							<form class="navbar-form navbar-left" role="search" ng-submit="findSub()">
+								<div class="form-group">
+									<input type="text" class="form-control" id="subreddit" placeholder="Look for a subreddit" ng-model="subreddit">
+								</div>
+								<button type="submit" class="btn btn-default">Go</button>
+							</form> <!-- /.navbar-form -->
+						  
+					  </div> <!-- /.navbar-collapse -->
+						
+						<div class="navbar-header navbar-right page-nav">
+						  	<button id="previous" class="btn btn-default disabled" ng-click="previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
+						  	<button id="next" class="btn btn-default" ng-click="nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
+						</div>
+						
+					</div>
+				</nav>
+			</header> <!-- /header -->
+
+			<div class="container" id="main">
+
+				<div class="post" ng-repeat="post in posts" ng-switch on="post.data.type">
+
+					<div class="post-header">
+						<p class="title">{{post.data.title}}</p>
+						<div class="meta">
+							<strong>{{post.data.subreddit}}</strong> - {{post.data.author}} - {{post.data.score}} points (<span class="ups">{{post.data.ups}}</span>|<span class="downs">{{post.data.downs}}</span>)
+							<span class="date">{{post.data.created|timeago}}</span>
+						</div>
+					</div>
+
+					<!-- Image -->
+					<a ng-switch-when="image" href="{{post.data.url}}" target="_blank"><img ng-src="{{post.data.url}}" alt="{{post.data.title}}"></a>
+					<!-- Video -->
+					<iframe ng-switch-when="video" ng-src="{{post.data.url}}" width="798" height="449" frameborder="0" allowfullscreen></iframe>
+					<!-- <div ng-switch-when="video" ng-bind-html="post.data.url"></div> -->
+					<!-- Imgur -->
+					<a ng-switch-when="imgur" href="{{post.data.url}}" target="_blank"><img ng-src="{{post.data.url + '.jpg'}}" alt="{{post.data.title}}"></a>
+
+					<div class="post-footer">
+						<button class="btn-comments btn btn-default btn-sm" ng-click="loadComments(post.data.permalink)"><i class="glyphicon glyphicon-comment"></i> <span>{{post.data.num_comments}}</span></button>
+					</div>
+
+				</div> <!-- /.post -->
+
+			</div> <!-- /#main -->
+	
+			<div id="comments" ng-controller="Comments">
+				<div class="comments-header">
+					<button class="btn btn-danger btn-sm" ng-click="closeComments()"><i class="glyphicon glyphicon-remove"></i></button>
+					<span>{{meta.title}}</span>
+				</div>
+				<div class="comments-content">
+					<img class="loader" src="assets/img/loader.gif" alt="Loading...">
+					<ul>
+						<li class="comment" ng-repeat="comment in comments">
+							<div class="comment-header">
+								<p>
+									<strong>{{comment.data.author}}</strong> 
+									<span> {{comment.data.ups - comment.data.downs}} points 
+										(<span class="ups">{{comment.data.ups}}</span>|<span class="downs">{{comment.data.downs}}</span>) 
+										<span class="date">{{comment.data.created|timeago}}</span>
+									</span>
+								</p>
+							</div>
+							<div class="comment-body">
+								{{comment.data.body}}
+							</div>
+<!-- 
+							<ul class="sub-comments">
+								<li ng-repeat="reply in comment.replies.data.children">
+									<div class="comment-header">
+										<p>
+											<strong>{{reply.data.author}}</strong> 
+											<span> {{reply.data.ups - reply.data.downs}} points 
+												(<span class="ups">{{reply.data.ups}}</span>|<span class="downs">{{reply.data.downs}}</span>) 
+												<span class="date">{{reply.data.created|timeago}}</span>
+											</span>
+										</p>
+									</div>
+								</li>
+							</ul> -->
+
+						</li>
+					</ul>
+				</div>
+			</div> <!-- /Comments -->
+
+		</div> <!-- /FrontPage -->
+
+	
+	<script src="assets/js/script.min.js"></script>
+</body>
+</html>
