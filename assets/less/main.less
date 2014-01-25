@@ -1,13 +1,13 @@
 /*
- * Table of contents
+ * Table of content
  * -----------------
  *
  * - base
- * - header
- * - navigations
+ * - navigation
  * - primary content
- * - secondary content
- * - footer
+ * - posts
+ * - comments
+ * - extras
  *
  */
 
@@ -45,26 +45,38 @@ img {
 }
 
 body {
-	font-family: 'Droid Sans', sans-serif;
+	font-family: @font-family;
 	position: relative;
+	background: #eee;
+}
+
+.btn {
+	border-radius: @border-radius;
 }
 
 /*=============================================================
 	=header
 ==============================================================*/
+header {
+	.navbar-default {
+		border-bottom: 2px solid #ccc;
+		&.navbar-fixed-top {
+			z-index: 50;
+		}
 
-.navbar-brand {
-	font-weight: bold;
+		.page-nav {
+			margin-top: 8px;
+			float: left;
+		}
+		.navbar-brand {
+			font-weight: bold;
+			color: @brand-primary;
+		}
+		input {
+			width: 200px;
+		}
+	}
 }
-
-.page-nav {
-	margin-top: 8px;
-	float: left;
-}
-
-/*=============================================================
-	=navigation
-==============================================================*/
 
 /*=============================================================
 	=primary content
@@ -72,23 +84,113 @@ body {
 
 #main {
 	margin-top: 70px;
+
+	&.list {
+		width: 100%;
+		height: auto;
+	}
+
+	&.grid {
+		max-width: 100%;
+		.post {
+			width: 200px;
+			margin: 5px;
+		}
+	}
+
+	&.panel {
+		background: transparent;
+		float: left;
+		max-width: 65%;
+		.post {
+			cursor: pointer;
+			width: 100%;
+			-webkit-transition: background 0.3s ease-out;
+			-moz-transition: background 0.3s ease-out;
+			-o-transition: background 0.3s ease-out;
+			transition: background 0.3s ease-out;
+			&:hover {
+				background: #eee;
+			}
+			.post-header {
+				padding: 0 0 5px 0;
+			}
+			.post-content,
+			.post-footer {
+				display: none
+			}
+
+			&.active {
+				border: 2px solid @brand-primary;
+			}
+		}
+	}
 }
 
-iframe {
-	width: 100%;
+#panel {
+	background: @post-bg;
+	border: 1px solid @post-border;
+	float: right;
+	height: 100%;
+	overflow-x: scroll;
+	margin-top: 71px;
+	position: fixed;
+	right: -35%;
+	width: 35%;
+	-webkit-transition: right 0.8s ease-out;
+	-moz-transition: right 0.8s ease-out;
+	-o-transition: right 0.8s ease-out;
+	&.showing {
+		right: 0;
+	}
+
+	.post {
+		border: none;
+		margin: 0;
+		width: 100%;
+		h2 {
+			padding: 10px 10px 5px 10px;
+			margin: 0;
+			font-size: 14px;
+		}
+	}
 }
+
+/*=============================================================
+	=post
+==============================================================*/
 
 .post {
+	z-index: 2;
+	width: 100%;
 	border: 1px solid @post-border;
 	background: @post-bg;
 	border-radius: @border-radius;
 	margin-bottom: 15px;
+	-webkit-transition: -webkit-transform 0.8s;
+	-moz-transition: -moz-transform 0.8s;
+	-ms-transition: -ms-transform 0.8s;
+	-o-transition: -o-transform 0.8s;
+	transition: transform 0.8s;
 
 	.post-header {
-		.title {
+		position: relative;
+		h2 {
 			padding: 10px 10px 5px 10px;
 			margin: 0;
+			font-size: 14px;
+			font-weight: normal;
+			position: relative;
+			width: 90%;
 		}
+
+		i {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			color: lighten(@text-color, 50%);
+		}
+		
 		.meta {
 			border-top: 1px solid @post-border;
 			font-size: 12px;
@@ -97,34 +199,147 @@ iframe {
 		}
 	}
 
-	img {
-		border-top: 1px solid @post-border;
-		border-bottom: 1px solid @post-border;
+	.post-content {
+		.clearfix;
+
+		img {
+			border-top: 1px solid @post-border;
+			border-bottom: 1px solid @post-border;
+		}
+
+		iframe {
+			width: 100%;
+		}
+
+		p, 
+		a.btn {
+			margin: 10px;
+			
+			&.reddit, 
+			&.wikipedia {
+				background-position: 5px center;
+				background-repeat: no-repeat;
+				padding-left: 30px;
+			}
+			&.wikipedia {
+				background-image: url(../img/wikipedia.png);
+			}
+			&.reddit {
+				background-image: url(../img/reddit_white.png);
+			}
+
+			small {
+				font-size: 80%;
+			}
+		}
+
+		.md {
+			p {
+				margin: 10px;
+			}
+		}
+
+		.oembedall-container {
+			br {
+				display: none;
+			}
+			a.embeded {
+				float: left;
+				margin: 0 10px 10px;
+				border: 1px solid #ccc;
+				border-radius: @border-radius;
+				color: @text-color;
+				text-decoration: none;
+				width: 97%;
+
+				b {
+					color: @brand-primary;
+				}
+
+				&:hover b {
+					color: darken(@brand-primary, 20%);
+				}
+
+				p {
+					.clearfix;
+					img {
+						float: left;
+						width: 100px;
+						height: 100px;
+						margin-right: 10px;
+						border-radius: @border-radius;
+					}
+				
+					br { display: inline }
+				}
+			}
+		}
 	}
 
 	.post-footer {
-		padding: 10px;
+		margin: 0 10px 10px 10px;
+		padding: 10px 0 0 0;
+		border-top: 1px solid #ddd;
 
-		.btn-comments {
-			i {
-				font-size: 16px;
+		.show-buttons {
+			display: none;
+			color: lighten(@text-color, 60%);
+			cursor: pointer;
+			&:hover {
+				color: lighten(@text-color, 20%);
 			}
-			span {
-				font-size: 11px;
-				margin: 0;
-				margin-top: -10px;
+		}
+
+		.reddit {
+			background-image: url(../img/reddit.png);
+			background-repeat: no-repeat;
+			background-position: center center;
+			height: 30px;
+			width: 40px;
+		}
+	}
+
+	/*	Isotope
+	==============================================================*/
+	&.isotope-item {
+		iframe {
+			height: 112px
+		}
+		.secondary {
+			display: none;
+		}
+		.embeded {
+			-webkit-box-sizing: content-box;
+		    -moz-box-sizing: content-box;
+		    box-sizing: content-box;
+		    width: 90% !important;
+		}
+		.post-footer {
+			margin: 0 10px;
+			padding: 0;
+			.show-buttons {
+				display: block;
+			}
+			.buttons {
+				display: none;
+				margin-bottom: 10px;
 			}
 		}
 	}
 }
 
 /*=============================================================
-	=secondary content
+	=comments
 ==============================================================*/
+#panel-comments {
+	position: relative;
+	top: 0;
+	right: 0;
+}
 
-#comments {
+.comments-container {
+	z-index: 3;
 	width: 500px;
-	height: 500px;
 	right: -500px;
 	top: 50px;
 	position: fixed;
@@ -142,51 +357,79 @@ iframe {
 
 	.comments-header {
 		.clearfix;
-		padding: 10px;
 		border-bottom: 1px solid #aaa;
-		span {
-			display: inline-block;
-			width: 410px;
-			float: right;
-			font-weight: bold;
+		background: @post-bg;
+		height: 50px;
+		width: 500px;
+		position: fixed;
+		z-index: 4;
+
+		h3 {
+			overflow: hidden; 
+			white-space: nowrap;
+			font-size: 18px;
+			margin: 15px;
 		}
+		button {
+			float: left;
+			margin: 10px;
+			display: inline;
+		}
+	}
+
+	.comments-content {
+		margin-top: 50px;
 	}
 
 	ul {
 		list-style: none;
-		padding: 10px;
+		padding: 0;
 	
 		.comment {
 			font-size: 14px;
-			margin-bottom: 10px;
-			border-bottom: 1px solid @post-border;
-			padding-bottom: 5px;
 			.comment-header {
 				margin-bottom: -5px;
+				padding: 10px 10px 0;
 				span {
 					font-size: 12px;
 					color: grey;
 				}
-			}
-
-			.sub-comments {
-				boreder-left: 5px solid red;
-				li {
-				background: red;
-					
+				.op {
+					background: @brand-primary;
+					padding: 0 5px;
+					border-radius: @border-radius;
+					color: #fff;
 				}
 			}
+			pre.comment-body {
+				font-family: @font-family;
+				font-size: 14px;
+				border: none;
+				background: none;
+				padding: 0 10px 10px 10px;
+				border-bottom: 1px solid @post-border;
+				margin: 0;
+				-ms-word-break: break-all;
+			    word-break: break-word;
+			}
+			.replies, 
+			.replies-2,
+			.replies-3,
+			.replies-4 {
+				display: none;
+			}
+
+			.replies .comment-content { border-left: 4px solid @brand-primary; }
+			.replies-2 .comment-content { border-left: 8px solid darken(@brand-primary, 10%); }
+			.replies-3 .comment-content { border-left: 12px solid darken(@brand-primary, 20%); }
+			.replies-4 .comment-content { border-left: 16px solid darken(@brand-primary, 30%); }
 		}
 	}
-
 }
 
-.loader {
-	margin-left: 45%;
-	margin-top: 50px;
-	width: 30px;
-	height: 30px;
-}
+/*=============================================================
+	=extras
+==============================================================*/
 
 .ups {
 	color: @reddit-orange!important;
@@ -194,13 +437,52 @@ iframe {
 .downs {
 	color: @reddit-blue!important;
 }
-.date {
-	float: right;
-}
 
-/*=============================================================
-	=footer
-==============================================================*/
+.comments-loader, 
+.loader {
+	display: block;
+	height: 2px;
+	position: relative;
+
+	.line {
+		display: block;
+		background: @brand-primary;
+		height: 2px;
+		width: 40px;
+
+		position: absolute;
+		left: 0px;
+		top: 0;
+
+		-webkit-animation: loader 3.9s ease-in-out infinite alternate;
+		-moz-animation: loader 3.9s ease-in-out infinite alternate;
+		-o-animation: loader 3.9s ease-in-out infinite alternate;
+		animation: loader 3.9s ease-in-out infinite alternate;
+	}
+}
+.comments-loader {
+	top: 50px;
+}
 
 @import 'media-queries.less';
 @import 'print.less';
+
+@-webkit-keyframes loader {
+	0%, 50%, 100% {left: 0%;}
+	25%, 75% {left: 95%;}
+}
+
+@-moz-keyframes loader {
+	0%, 50%, 100% {left: 0%;}
+	25%, 75% {left: 95%;}
+}
+
+@-o-keyframes loader {
+	0%, 50%, 100% {left: 0%;}
+	25%, 75% {left: 95%;}
+}
+
+@keyframes loader {
+	0%, 50%, 100% {left: 0%;}
+	25%, 75% {left: 95%;}
+}

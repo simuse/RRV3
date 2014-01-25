@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app="app">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,126 +10,259 @@
 	
 	<link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="assets/css/main.min.css">
+	<link rel="stylesheet" href="assets/css/nprogress.css">
 
-	<script src="assets/js/vendor/modernizr-2.6.2.min.js"></script>
+	<!--<script src="assets/js/vendor/modernizr-2.6.2.min.js"></script>-->
 	<script src="assets/js/vendor/jquery-1.10.2.min.js"></script>
 	<script src="assets/js/vendor/angular-1.2.3.min.js"></script>
 	<script src="assets/js/vendor/angular-route.min.js"></script>
-</head>
-<body>
-	
-		
-		<div ng-controller="FrontPage">
-			
-			<header>
-				<nav class="navbar navbar-default navbar-fixed-top" id="nav">
-					<div class="container">
+	<script src="assets/js/vendor/angular-sanitize.min.js"></script>
 
-						<div class="navbar-header">
+</head>
+<body ng-app="app">
+
+
+	<!-- Login Modal	
+	==============================================================-->
+	<div class="modal fade" id="loginModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Login to Reddit</h4>
+				</div>
+				<div class="modal-body">
+				<form role="form" id="loginForm">
+					<div class="form-group">
+						<label for="username">Username</label>
+						<input type="text" class="form-control" id="username" placeholder="Username" name="user">
+					</div>
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input type="password" class="form-control" id="password" placeholder="Password" name="passwd">
+					</div>
+				</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="loginBtn">Login</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+		
+	<div ng-controller="FrontPage">
+
+		<!-- Header
+		==============================================================-->
+		<header>
+			<nav class="navbar navbar-default navbar-fixed-top" id="nav">
+				<div class="container">
+
+					<div class="navbar-header">
 					    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="navbar-collapse">
 					      <span class="sr-only">Toggle navigation</span>
 					      <span class="icon-bar"></span>
 					      <span class="icon-bar"></span>
 					      <span class="icon-bar"></span>
 					    </button>
-					    <a class="navbar-brand" href="index.html">RRV3</a>
-					  </div> <!-- /.navbar-header -->
+					    <a class="navbar-brand" href="index.html">Reddit-Roll</a>
+					</div> <!-- /.navbar-header -->
 
-					  <div class="collapse navbar-collapse navbar-left" id="navbar-collapse">
+					<div class="collapse navbar-collapse navbar-left" id="navbar-collapse">
 
 					  	<ul class="nav navbar-nav">
-					  		<li><a href="">Settings</a></li>
-					  		<li><a href="">Multireddits</a></li>
+					  		<li><a href="#" class="alert-nowork">Multireddits</a></li>
+					  		<li>
+					  			<a href="#" class="alert-nowork" id="log" title="Log In" data-toggle="modal" data-target="loginModal"><i class="glyphicon glyphicon-user"></i></a>
+					  		</li>
+					  		<li>
+					  			<a href="#" title="Toggle View" ng-click="toggleLayout($event)">
+					  				<i class="glyphicon glyphicon-th-list"></i>
+					  			</a>
+					  		</li>
 					  	</ul> <!-- /.navbar-nav -->
 
-							<form class="navbar-form navbar-left" role="search" ng-submit="findSub()">
-								<div class="form-group">
-									<input type="text" class="form-control" id="subreddit" placeholder="Look for a subreddit" ng-model="subreddit">
-								</div>
-								<button type="submit" class="btn btn-default">Go</button>
-							</form> <!-- /.navbar-form -->
-						  
-					  </div> <!-- /.navbar-collapse -->
-						
-						<div class="navbar-header navbar-right page-nav">
-						  	<button id="previous" class="btn btn-default disabled" ng-click="previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
-						  	<button id="next" class="btn btn-default" ng-click="nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
-						</div>
-						
-					</div>
-				</nav>
-			</header> <!-- /header -->
+					  	<form class="navbar-form navbar-left" role="search" ng-submit="findSub()">
+							<div class="form-group">
+								<input type="text" class="form-control input-sm" id="subreddit" placeholder="Look for a subreddit" ng-model="subreddit" typeahead="subreddit for subreddit in getSubreddit($viewValue)">
+							</div>
+							<button type="submit" class="btn btn-default btn-sm">Go</button>
+						</form> <!-- /.navbar-form -->
 
-			<div class="container" id="main">
-
-				<div class="post" ng-repeat="post in posts" ng-switch on="post.data.type">
-
-					<div class="post-header">
-						<p class="title">{{post.data.title}}</p>
-						<div class="meta">
-							<strong>{{post.data.subreddit}}</strong> - {{post.data.author}} - {{post.data.score}} points (<span class="ups">{{post.data.ups}}</span>|<span class="downs">{{post.data.downs}}</span>)
-							<span class="date">{{post.data.created|timeago}}</span>
-						</div>
+					</div> <!-- /.navbar-collapse -->
+					
+					<div class="navbar-header navbar-right page-nav">
+					  	<button id="previous" class="btn btn-default btn-sm disabled" ng-click="previousPage()" title="Previous page"><i class="glyphicon glyphicon-chevron-left"></i></button>
+					  	<button id="next" class="btn btn-default btn-sm" ng-click="nextPage()" title="Next page"><i class="glyphicon glyphicon-chevron-right"></i></button>
 					</div>
 
-					<!-- Image -->
-					<a ng-switch-when="image" href="{{post.data.url}}" target="_blank"><img ng-src="{{post.data.url}}" alt="{{post.data.title}}"></a>
-					<!-- Video -->
-					<iframe ng-switch-when="video" ng-src="{{post.data.url}}" width="798" height="449" frameborder="0" allowfullscreen></iframe>
-					<!-- <div ng-switch-when="video" ng-bind-html="post.data.url"></div> -->
-					<!-- Imgur -->
-					<a ng-switch-when="imgur" href="{{post.data.url}}" target="_blank"><img ng-src="{{post.data.url + '.jpg'}}" alt="{{post.data.title}}"></a>
-
-					<div class="post-footer">
-						<button class="btn-comments btn btn-default btn-sm" ng-click="loadComments(post.data.permalink)"><i class="glyphicon glyphicon-comment"></i> <span>{{post.data.num_comments}}</span></button>
-					</div>
-
-				</div> <!-- /.post -->
-
-			</div> <!-- /#main -->
-	
-			<div id="comments" ng-controller="Comments">
-				<div class="comments-header">
-					<button class="btn btn-danger btn-sm" ng-click="closeComments()"><i class="glyphicon glyphicon-remove"></i></button>
-					<span>{{meta.title}}</span>
 				</div>
-				<div class="comments-content">
-					<img class="loader" src="assets/img/loader.gif" alt="Loading...">
-					<ul>
-						<li class="comment" ng-repeat="comment in comments">
-							<div class="comment-header">
-								<p>
-									<strong>{{comment.data.author}}</strong> 
-									<span> {{comment.data.ups - comment.data.downs}} points 
-										(<span class="ups">{{comment.data.ups}}</span>|<span class="downs">{{comment.data.downs}}</span>) 
-										<span class="date">{{comment.data.created|timeago}}</span>
-									</span>
-								</p>
-							</div>
-							<div class="comment-body">
-								{{comment.data.body}}
-							</div>
-<!-- 
-							<ul class="sub-comments">
-								<li ng-repeat="reply in comment.replies.data.children">
-									<div class="comment-header">
+			</nav>
+		</header>
+
+		<!-- Content
+		==============================================================-->
+		<div class="container list" id="main" domrendered>
+
+			<div class="post {{post.data.type}}" ng-repeat="post in posts" ng-switch on="post.data.type">
+
+				<div class="post-header">
+					<h2 class="title">{{post.data.title}}
+					</h2>
+					<i ng-switch-when="oembed" class="glyphicon glyphicon-globe pull-right"></i>
+					<i ng-switch-when="wikipedia" class="glyphicon glyphicon-globe pull-right"></i>
+					<i ng-switch-when="image" class="glyphicon glyphicon-picture pull-right"></i>
+					<i ng-switch-when="imgur" class="glyphicon glyphicon-picture pull-right"></i>
+					<i ng-switch-when="imguralb" class="glyphicon glyphicon-picture pull-right"></i>
+					<i ng-switch-when="video" class="glyphicon glyphicon-play pull-right"></i>
+					<i ng-switch-when="text" class="glyphicon glyphicon-list-alt pull-right"></i>
+					<i ng-switch-when="reddit" class="glyphicon reddit"></i>
+
+					<div class="meta">
+						<strong>{{post.data.subreddit}}</strong> <span class="secondary"> - {{post.data.author}} - {{post.data.score}} points (<span class="ups">{{post.data.ups}}</span>|<span class="downs">{{post.data.downs}}</span>)
+						<span class="date">{{post.data.created|timeago}}</span></span>
+					</div>
+				</div>
+
+				<div class="post-content">
+					
+					<!-- Image -->
+					<a ng-switch-when="image" href="{{post.data.url}}" target="_blank">
+						<img ng-src="{{post.data.url}}" alt="{{post.data.title}}">
+					</a>
+					<!-- Video -->
+					<iframe ng-switch-when="video" ng-src="{{post.data.video}}" width="798" height="449" frameborder="0" allowfullscreen></iframe>
+					<!-- Imgur -->
+					<a ng-switch-when="imgur" href="{{post.data.url}}" target="_blank">
+						<img ng-src="{{post.data.url + '.jpg'}}" alt="{{post.data.title}}">
+					</a>
+					<!-- Imgur album -->
+					<iframe ng-switch-when="imguralb" ng-src="{{post.data.url}}" width="100%" height="550" frameborder="0"></iframe>
+					<!-- Text -->
+					<p ng-switch-when="text" ng-bind-html="post.data.content"></p>
+					<!-- Oembed -->
+					<a ng-switch-when="oembed" href="{{post.data.url}}" class="btn btn-primary oembed" target="_blank">Link <small>({{post.data.domain}})</small></a>
+					<!-- Reddit -->
+					<a ng-switch-when="reddit" href="{{post.data.url}}" class="btn btn-primary reddit" target="_blank">Link</a>
+					<!-- Wikipedia -->
+					<a ng-switch-when="wikipedia" href="{{post.data.url}}" class="btn btn-primary wikipedia" target="_blank">Link</a>
+				</div>
+
+				<div class="post-footer">
+					<a class="show-buttons" ng-click="showButtons($event)"><i class="glyphicon glyphicon-chevron-up glyphicon-chevron-down"></i></a>
+					<div class="buttons">
+						<button class="btn-comments btn btn-default btn-sm" ng-click="loadComments(post.data.permalink)" title="Show comments"><i class="glyphicon glyphicon-comment"></i> <span>{{post.data.num_comments}}</span></button>
+						<a href="http://www.reddit.com{{post.data.permalink}}" class="btn btn-default btn-sm reddit" target="_blank" title="View on Reddit"></a>
+					</div>
+				</div>
+
+			</div> <!-- /.post -->
+
+		</div> <!-- /#main -->
+
+		<!-- Comments
+		==============================================================-->
+		<div id="comments" class="comments-container" ng-controller="Comments">
+			<div class="comments-header">
+				<button class="btn btn-danger btn-sm" ng-click="closeComments()"><i class="glyphicon glyphicon-remove"></i></button>
+				<h3 title="{{title}}">{{title}}</h3>
+			</div>
+			<div class="comments-loader"><span class="line"></span></div>
+
+
+			<div class="comments-content">
+				<ul>
+					<li class="comment" ng-repeat="comment in comments">
+						<div class="comment-header" showsubcomments>
+							<p>
+								<span class="chevron glyphicon glyphicon-chevron-right" ng-show="comment.data.replies.length"></span>
+								<strong ng-class="{op: comment.data.author===op}">{{comment.data.author}}</strong>
+								<span> {{comment.data.ups - comment.data.downs}} points 
+									(<span class="ups">{{comment.data.ups}}</span>|<span class="downs">{{comment.data.downs}}</span>) 
+									<span class="date">{{comment.data.created|timeago}}</span>
+								</span>
+							</p>
+						</div>
+						<pre class="comment-body" ng-bind-html="comment.data.body|linky:'_blank'|rendercomment"></pre>
+
+						<ul class="replies">
+							<li ng-repeat="reply in comment.data.replies">
+								<div class="comment-content">
+									<div class="comment-header" showsubcomments>
 										<p>
-											<strong>{{reply.data.author}}</strong> 
+											<span class="chevron glyphicon glyphicon-chevron-right" ng-show="reply.data.replies.length"></span>
+											<strong  ng-class="{op: reply.data.author===op}">{{reply.data.author}}</strong> 
 											<span> {{reply.data.ups - reply.data.downs}} points 
 												(<span class="ups">{{reply.data.ups}}</span>|<span class="downs">{{reply.data.downs}}</span>) 
 												<span class="date">{{reply.data.created|timeago}}</span>
 											</span>
 										</p>
 									</div>
-								</li>
-							</ul> -->
+									<pre class="comment-body" ng-bind-html="reply.data.body|rendercomment"></pre>
+								</div>
 
-						</li>
-					</ul>
-				</div>
-			</div> <!-- /Comments -->
+								<ul class="replies-2">
+									<li ng-repeat="subreply in reply.data.replies">
+										<div class="comment-content">
+											<div class="comment-header" showsubcomments>
+												<p>
+													<span class="chevron glyphicon glyphicon-chevron-right" ng-show="subreply.data.replies.length"></span>
+													<strong ng-class="{op: subreply.data.author===op}">{{subreply.data.author}}</strong> 
+													<span> {{subreply.data.ups - subreply.data.downs}} points 
+														(<span class="ups">{{subreply.data.ups}}</span>|<span class="downs">{{subreply.data.downs}}</span>) 
+														<span class="date">{{subreply.data.created|timeago}}</span>
+													</span>
+												</p>
+											</div>
+											<pre class="comment-body" ng-bind-html="subreply.data.body|linky:'_blank'|rendercomment"></pre>
+										</div>
 
-		</div> <!-- /FrontPage -->
+										<ul class="replies-3">
+											<li ng-repeat="subsubreply in subreply.data.replies">
+												<div class="comment-content">
+													<div class="comment-header" showsubcomments>
+														<p>
+															<span class="chevron glyphicon glyphicon-chevron-right" ng-show="subsubreply.data.replies.length"></span>
+															<strong ng-class="{op: subsubreply.data.author===op}">{{subsubreply.data.author}}</strong> 
+															<span> {{subsubreply.data.ups - subsubreply.data.downs}} points 
+																(<span class="ups">{{subsubreply.data.ups}}</span>|<span class="downs">{{subsubreply.data.downs}}</span>) 
+																<span class="date">{{subsubreply.data.created|timeago}}</span>
+															</span>
+														</p>
+													</div>
+													<pre class="comment-body" ng-bind-html="subsubreply.data.body|linky:'_blank'|rendercomment"></pre>
+												</div>
+
+												<ul class="replies-4">
+													<li ng-repeat="subsubsubreply in subsubreply.data.replies" ng-show="subsubsubreply.data.replies.length">
+														<div class="comment-content">
+															<div class="comment-header">
+																<p>
+																	<strong ng-class="{op: subsubsubreply.data.author===op}">{{subsubsubreply.data.author}}</strong> 
+																	<span> {{subsubsubreply.data.ups - subsubsubreply.data.downs}} points 
+																		(<span class="ups">{{subsubsubreply.data.ups}}</span>|<span class="downs">{{subsubsubreply.data.downs}}</span>) 
+																		<span class="date">{{subsubsubreply.data.created|timeago}}</span>
+																	</span>
+																</p>
+															</div>
+															<pre class="comment-body" ng-bind-html="subsubsubreply.data.body|linky:'_blank'|rendercomment"></pre>
+														</div>
+													</li>
+												</ul>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div> <!-- /Comments -->
+
+	</div> <!-- /FrontPage -->
 
 	
 	<script src="assets/js/script.min.js"></script>

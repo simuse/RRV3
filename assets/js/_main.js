@@ -1,159 +1,327 @@
-/*	REDDIT API
+/*=============================================================
+	Reddit API
 ==============================================================*/
 var Settings = {
-	numPosts: 25,
-	sortBy: 'new'
+    layout: 'list',
+    numPosts: 50,
+    sortBy: 'new'
 };
 
 var Reddit = {
-	after: [],
-	subreddit: ''
+    after: [],
+    subreddit: ''
 };
 
-/*	APP
+
+/*=============================================================
+	App
 ==============================================================*/
-angular.module('app', ['ngRoute', 'filters']);
+var app = angular.module('app', [
+    'ngRoute',
+    'filters',
+    'ngSanitize',
+    'appControllers',
+    'ui.bootstrap'
+]);
+
+/*=============================================================
+	Routes
+==============================================================*/
+app.config(['$routeProvider',
+    function($routeProvider) {
+        $routeProvider
+            .when('/main', {
+                controller: 'FrontPage'
+            })
+            .otherwise({
+                redirectTo: '/main'
+            });
+    }
+]);
 
 
-/*	Filters
+/*=============================================================
+	Filters
 ==============================================================*/
 angular.module('filters', [])
-	.filter('timeago', function () {
+    .filter('timeago', function() {
         return function(timestamp) {
-    		return jQuery.timeago(new Date(timestamp*1000));
-    	}
+            return jQuery.timeago(new Date(timestamp * 1000));
+        }
+    })
+    .filter('rendercomment', function() {
+        return function(input) {
+            if (input) {
+                var bold = /\*\*(\S(.*?\S)?)\*\*/gm,
+                    italic = /\*(\S(.*?\S)?)\*/gm,
+                    remove = /\^\^/gm;
+                input = input.replace(bold, '<strong>$1</strong>');
+                input = input.replace(italic, '<em>$1</em>');
+                input = input.replace(remove, '');
+                return input;
+            }
+        }
     });
 
-/*	Controllers
+
+/*=============================================================
+	Directives
 ==============================================================*/
-function FrontPage($scope, $http, $sce) {
-	$scope.posts = [];
 
-	/*	Data
-	==============================================================*/
+app.directive('domrendered', function() {
+    return function() {
+        var t = window.setInterval(function() {
+            if ($('.post').length > 0) {
+                window.clearInterval(t);
+                domrendered();
+            }
+        }, 50);
 
-	$scope.getPage = function() {
-		var url;
-		if (!Reddit.subreddit) {
-			url = "http://www.reddit.com/.json?&limit=" + Settings.numPosts + "&sort=" + Settings.sortBy + "&after=" + Reddit.after[Reddit.after.length -1];
-		} else {
-			url = "http://www.reddit.com/r/" + $scope.subreddit + "/.json?limit=" + Settings.numPosts + "&sort=" + Settings.sortBy + "&after=" + Reddit.after[Reddit.after.length -1];
-		}
+        var domrendered = function() {
+            activateOembed();
+            makeLinksExternal();
+        };
+    }
+});
 
-		$http.get(url)
-			.success(function(data, status, headers, config){
-				$scope.parseData(data);
-			})
-			.error(function(data, status, headers, config){
-				console.log(data);
-			});
-	}
+app.directive('showsubcomments', function() {
+    return function($scope, $element) {
+        $element.bind('click', function() {
+            var $ul = $element.closest('li').find('ul').first();
+            $ul.slideToggle();
+            $element.find('.chevron').toggleClass('glyphicon-chevron-down');
+        });
+    }
+});
 
-	$scope.getPage();
+/*=============================================================
+	Controllers
+==============================================================*/
+var appControllers = angular.module('appControllers', []);
 
-	$scope.findSub = function() {
-		Reddit.after = [];
-		Reddit.subreddit = $scope.subreddit;
-		$scope.disablePreviousButton();
-		$scope.getPage();
-	}
+/*	FRONTPAGE
+==============================================================*/
+appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
+    function($scope, $http, $sce) {
 
-	$scope.parseData = function(data) {
-		Reddit.after.push(data.data.after);
-		var posts = data.data.children;
-		angular.forEach(posts, function(post){
-			$scope.getPostType(post);
-		});
-		$scope.posts = posts;
-	}
+        $scope.posts = [];
 
-	$scope.getPostType = function(post) {
-		var url = post.data.url,
-			extension = url.split(".")[url.split(".").length - 1],
-			type = '';
-		if (/jpg|png|gif|bmp/.test(extension)) type = 'image';
-		else if (/imgur.com\/a/.test(url)) type = 'imguralb';
-		else if (/imgur.com/.test(url)) type = 'imgur';
-		else if (post.data.selftext) type = 'text';
-		else if (/youtube.com/.test(url) || /youtu.be/.test(url) || /vimeo/.test(url)) {
-			type = 'video';
-			post.data.url = $sce.trustAsResourceUrl($scope.makeEmbedable(post.data.url));
-			// post.data.url = $sce.trustAsHtml(post.data.secure_media_embed.content);
-		}
-		else type = 'oembed';
-		post.data.type = type;
-	}
+        /*	Data
+		==============================================================*/
+        $scope.getPage = function() {
+            NProgress.start().inc().inc().inc();
+            var url = 'http://www.reddit.com/';
+            url += Reddit.subreddit ? 'r/' + Reddit.subreddit + '/' : '';
+            url += ".json?&limit=" + Settings.numPosts + "&sort=" + Settings.sortBy + "&after=" + Reddit.after[Reddit.after.length - 1];
 
-	$scope.makeEmbedable = function(url) {
-		if (/youtube.com/.test(url)) {
-			return 'http://www.youtube.com/embed/' + url.split('v=')[1];
-		} 
-		else if (/youtu.be/.test(url)) {
-			return 'http://www.youtube.com/embed/' + url.split('/')[url.split('/').length - 1];	
-		}
-		else if (/vimeo.com/.test(url)) {
-			return 'http://player.vimeo.com/video/' + url.split('/')[url.split('/').length - 1];
-		}
-	}
+            $http.get(url)
+                .success(function(data, status, headers, config) {
+                    NProgress.inc().inc();
+                    $scope.parseData(data);
+                })
+                .error(function(data, status, headers, config) {
+                    NProgress.done();
+                    alertInexistingSub(Reddit.subreddit);
+                });
+        }
 
-	/*	Navigation
-	==============================================================*/
+        $scope.getPage();
 
-	$scope.nextPage = function() {
-		$scope.getPage();
-		$('#previous').removeClass('disabled');
-	}
+        $scope.findSub = function() {
+            Reddit.after = [];
+            Reddit.subreddit = $scope.subreddit;
+            $scope.disablePreviousButton();
+            $scope.getPage();
+        }
 
-	$scope.previousPage = function() {
-		Reddit.after.pop();
-		Reddit.after.pop();
-		if (Reddit.after.length == 0) $scope.disablePreviousButton();
-		$scope.getPage();
-	}
+        $scope.parseData = function(data) {
+            NProgress.inc();
+            Reddit.after.push(data.data.after);
+            scrollToTop();
 
-	$scope.disablePreviousButton = function() {
-		$('#previous').addClass('disabled')
-	}
+            var posts = data.data.children;
+            angular.forEach(posts, function(post) {
+                $scope.getPostType(post);
+            });
+            $scope.posts = posts;
+            NProgress.done();
 
-	$scope.loadComments = function(permalink) {
-		$scope.$broadcast('loadComments', permalink);
-	}
-}
+            if (Settings.layout === 'grid') {
+                reloadGrid();
+            }
+        }
+
+        $scope.getPostType = function(post) {
+            var url = post.data.url,
+                extension = url.split(".")[url.split(".").length - 1],
+                type = '',
+                domain = post.data.domain;
+            if (/jpg|png|gif|bmp|jpeg/.test(extension)) type = 'image';
+            else if (/imgur.com\/a/.test(url)) {
+                type = 'imguralb';
+                post.data.url = $sce.trustAsResourceUrl(post.data.url + '/embed');
+            } else if (/imgur.com/.test(url)) type = 'imgur';
+            else if (post.data.selftext) {
+                type = 'text';
+                var text = unescape(post.data.selftext_html);
+                post.data.content = $sce.trustAsHtml(text);
+            } else if (domain === 'youtube.com' || domain === 'youtu.be') {
+                type = 'video';
+                var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/i,
+                    match = post.data.url.match(regExp);
+                if (match && match[2].length == 11) {
+                    post.data.video = $sce.trustAsResourceUrl('//www.youtube.com/embed/' + match[2]);
+                }
+            } else if (domain === 'vimeo.com') {
+                type = 'video';
+                var regExp = /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/,
+                    match = post.data.url.match(regExp);
+                if (match && match[2].length > 0) {
+                    post.data.video = $sce.trustAsResourceUrl('//player.vimeo.com/video/' + match[2]);
+                }
+            } else if (/wikipedia./.test(domain)) {
+                type = 'wikipedia';
+            } else if (/self.|reddit./.test(domain)) {
+                type = 'reddit';
+            } else type = 'oembed';
+            post.data.type = type;
+        }
+
+        /*	Navigation / Buttons
+		==============================================================*/
+        $scope.nextPage = function() {
+            $scope.getPage();
+            $('#previous').removeClass('disabled');
+        }
+
+        $scope.previousPage = function() {
+            Reddit.after.pop();
+            Reddit.after.pop();
+            if (Reddit.after.length == 0) $scope.disablePreviousButton();
+            $scope.getPage();
+        }
+
+        $scope.disablePreviousButton = function() {
+            $('#previous').addClass('disabled');
+        }
+
+        $scope.loadComments = function(permalink) {
+            $scope.$broadcast('loadComments', permalink);
+        }
+
+        $scope.toggleLayout = function(e) {
+            var $target = $(e.target);
+            if ($target.hasClass('glyphicon')) $target = $target.parent();
+            if (Settings.layout === 'list') {
+                Settings.layout = 'grid';
+                setLayout('grid');
+                $target.html('<i class="glyphicon glyphicon-th"></i>');
+            } else {
+                Settings.layout = 'list';
+                setLayout('list');
+                $target.html('<i class="glyphicon glyphicon-th-list"></i>');
+            }
+        }
+
+        $scope.showButtons = function(e) {
+            e.preventDefault();
+            var $target = $(e.target);
+            if ($target.hasClass('glyphicon')) $target = $target.parent();
+            $target.find('i').toggleClass('glyphicon-chevron-down');
+            $target.siblings('.buttons').slideToggle('fast', function() {
+                $('#main').isotope('reLayout');
+            });
+        }
+
+        /*  Typeahead
+        ==============================================================*/
+        $scope.getSubreddit = function(val) {
+            return $http.get('http://www.reddit.com/subreddits/search/.json?', {
+                params: {
+                    q: val,
+                    limit: 50
+                }
+            }).then(function(res) {
+                var subreddits = [];
+                angular.forEach(res.data.data.children, function(item) {
+                    var url = item.data.url,
+                        split = url.split('/'),
+                        sub = split[2];
+                    if (sub.indexOf(val) != -1) subreddits.push(sub);
+                });
+                return subreddits;
+            });
+        }
+
+        /* Comments
+        ==============================================================*/
+        $scope.parseComments = function(data) {
+            var comments = data[1].data.children;
+            $scope.title = data[0].data.children[0].data.title;
+            $scope.op = data[0].data.children[0].data.author;
+            $scope.comments = $scope.parseReplies(comments);
+            return comments;
+        }
+
+        $scope.parseReplies = function(comments) {
+            for (var i = 0, l = comments.length - 1; i < l; i++) {
+                if (typeof comments[i].data.replies === 'object') {
+                    var replies = comments[i].data.replies.data.children;
+                    if (!replies[replies.length - 1].data.body) {
+                        replies.pop();
+                    }
+                    comments[i].data.replies = $scope.parseReplies(replies);
+                }
+            }
+            return comments;
+        }
+    }
+]);
 
 
-function Comments($scope, $http) {
-	$scope.meta = [];
-	$scope.comments = [];
+/*	COMMENTS
+==============================================================*/
+appControllers.controller('Comments', ['$scope', '$http',
+    function($scope, $http) {
+        $scope.meta = [];
+        $scope.comments = [];
 
-	$scope.$on('loadComments', function(e, permalink) {
-		var winH = $(window).height(),
-			navH = $('#nav').height(),
-			commentsUrl = 'http://www.reddit.com' + permalink + '.json?&sort=best';
-		
-		$('#comments').css('height', winH-navH).addClass('showing');
+        $scope.$on('loadComments', function(e, permalink) {
+            var winH = $(window).height(),
+                navH = $('#nav').height(),
+                commentsUrl = 'http://www.reddit.com' + permalink + '.json?&sort=best';
 
-		$http.get(commentsUrl)
-			.success(function(data, status, headers, config){
-				$scope.parseComments(data);
-				$('.loader').remove();
-			})
-			.error(function(data, status, headers, config){
-				console.log(data);
-			});
-	});
+            showCommentsLoader();
 
-	$scope.parseComments = function(data) {
-		var comments = data[1].data.children;
-		// angular.foreach(comments, function(comment) {
-		// 	comment.replies = comment.replies.data.children;
-		// });
-		$scope.meta = data[0].data.children[0].data;
-		$scope.comments = comments;
-		console.log($scope.comments);
-	}
+            $('#comments').css('height', winH - navH).addClass('showing');
 
-	$scope.closeComments = function() {
-		$('#comments').removeClass('showing');
-	}
-	
-}
+            $http.get(commentsUrl)
+                .success(function(data, status, headers, config) {
+                    $scope.comments = $scope.parseComments(data);
+                    hideCommentsLoader();
+                })
+                .error(function(data, status, headers, config) {
+                    console.log(data);
+                });
+        });
+
+        $scope.closeComments = function() {
+            $('#comments').removeClass('showing');
+        }
+
+    }
+]);
+
+/*=============================================================
+	Modal
+==============================================================*/
+
+jQuery(document).ready(function($) {
+    $('#log').on('click', function() {
+        $('#loginModal').modal();
+    });
+
+    $('.alert-nowork').on('click', function() {
+        alert('This feature does not work yet :(');
+    });
+});
