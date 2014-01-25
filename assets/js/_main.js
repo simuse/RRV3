@@ -1,21 +1,22 @@
 /*=============================================================
 	Reddit API
 ==============================================================*/
+
 var Settings = {
-    layout: 'list',
-    numPosts: 50,
-    sortBy: 'new'
+    layout: 'list', // Base layout
+    numPosts: 50, // Max number of posts    
+    sortBy: 'new' // Sorting system
 };
 
 var Reddit = {
-    after: [],
+    after: [], // Stores the id of the last post
     subreddit: ''
 };
-
 
 /*=============================================================
 	App
 ==============================================================*/
+
 var app = angular.module('app', [
     'ngRoute',
     'filters',
@@ -27,6 +28,7 @@ var app = angular.module('app', [
 /*=============================================================
 	Routes
 ==============================================================*/
+
 app.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider
@@ -39,35 +41,50 @@ app.config(['$routeProvider',
     }
 ]);
 
-
 /*=============================================================
 	Filters
 ==============================================================*/
+
 angular.module('filters', [])
-    .filter('timeago', function() {
-        return function(timestamp) {
-            return jQuery.timeago(new Date(timestamp * 1000));
+
+/** 
+ * Returns a formated date from a timestamp using timeago plugin
+ * @param {timestamp} int
+ * @return {string}
+ */
+.filter('timeago', function() {
+    return function(timestamp) {
+        return jQuery.timeago(new Date(timestamp * 1000));
+    }
+})
+
+/** 
+ * Basic formatting of the comments
+ * @param {input} string
+ * @return {string}
+ */
+.filter('rendercomment', function() {
+    return function(input) {
+        if (input) {
+            var bold = /\*\*(\S(.*?\S)?)\*\*/gm,
+                italic = /\*(\S(.*?\S)?)\*/gm,
+                remove = /\^\^/gm;
+            input = input.replace(bold, '<strong>$1</strong>');
+            input = input.replace(italic, '<em>$1</em>');
+            input = input.replace(remove, '');
+            return input;
         }
-    })
-    .filter('rendercomment', function() {
-        return function(input) {
-            if (input) {
-                var bold = /\*\*(\S(.*?\S)?)\*\*/gm,
-                    italic = /\*(\S(.*?\S)?)\*/gm,
-                    remove = /\^\^/gm;
-                input = input.replace(bold, '<strong>$1</strong>');
-                input = input.replace(italic, '<em>$1</em>');
-                input = input.replace(remove, '');
-                return input;
-            }
-        }
-    });
+    }
+});
 
 
 /*=============================================================
 	Directives
 ==============================================================*/
 
+/** 
+ * Checks if the DOM is rendered, then calls some functions
+ */
 app.directive('domrendered', function() {
     return function() {
         var t = window.setInterval(function() {
@@ -84,6 +101,9 @@ app.directive('domrendered', function() {
     }
 });
 
+/** 
+ * Toggles subcomments on click
+ */
 app.directive('showsubcomments', function() {
     return function($scope, $element) {
         $element.bind('click', function() {
@@ -97,10 +117,12 @@ app.directive('showsubcomments', function() {
 /*=============================================================
 	Controllers
 ==============================================================*/
+
 var appControllers = angular.module('appControllers', []);
 
 /*	FRONTPAGE
 ==============================================================*/
+
 appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
     function($scope, $http, $sce) {
 
@@ -108,8 +130,12 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
 
         /*	Data
 		==============================================================*/
+
+        /** 
+         * Ajax call to the Reddit API
+         */
         $scope.getPage = function() {
-            NProgress.start().inc().inc().inc();
+            NProgress.start().inc().inc();
             var url = 'http://www.reddit.com/';
             url += Reddit.subreddit ? 'r/' + Reddit.subreddit + '/' : '';
             url += ".json?&limit=" + Settings.numPosts + "&sort=" + Settings.sortBy + "&after=" + Reddit.after[Reddit.after.length - 1];
@@ -117,6 +143,7 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             $http.get(url)
                 .success(function(data, status, headers, config) {
                     NProgress.inc().inc();
+                    scrollToTop();
                     $scope.parseData(data);
                 })
                 .error(function(data, status, headers, config) {
@@ -127,6 +154,9 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
 
         $scope.getPage();
 
+        /** 
+         * Load a subreddit
+         */
         $scope.findSub = function() {
             Reddit.after = [];
             Reddit.subreddit = $scope.subreddit;
@@ -134,10 +164,13 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             $scope.getPage();
         }
 
+        /** 
+         * Format the data received through the Ajax call and sets it to the $scope
+         * @param {data} object
+         */
         $scope.parseData = function(data) {
             NProgress.inc();
             Reddit.after.push(data.data.after);
-            scrollToTop();
 
             var posts = data.data.children;
             angular.forEach(posts, function(post) {
@@ -151,6 +184,10 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             }
         }
 
+        /** 
+         * Find out the type of a post and adds it to the post object
+         * @param {post} object
+         */
         $scope.getPostType = function(post) {
             var url = post.data.url,
                 extension = url.split(".")[url.split(".").length - 1],
@@ -189,14 +226,20 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
 
         /*	Navigation / Buttons
 		==============================================================*/
+
+        /** 
+         * Load the next page
+         */
         $scope.nextPage = function() {
             $scope.getPage();
             $('#previous').removeClass('disabled');
         }
 
+        /** 
+         * Load the previous page
+         */
         $scope.previousPage = function() {
-            Reddit.after.pop();
-            Reddit.after.pop();
+            Reddit.after.splice(-2, 2);
             if (Reddit.after.length == 0) $scope.disablePreviousButton();
             $scope.getPage();
         }
@@ -209,6 +252,9 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             $scope.$broadcast('loadComments', permalink);
         }
 
+        /** 
+         * Toggle the layout between 'list' and 'grid'
+         */
         $scope.toggleLayout = function(e) {
             var $target = $(e.target);
             if ($target.hasClass('glyphicon')) $target = $target.parent();
@@ -223,6 +269,9 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             }
         }
 
+        /** 
+         * Toggle the visibility of post options buttons in the grid layout
+         */
         $scope.showButtons = function(e) {
             e.preventDefault();
             var $target = $(e.target);
@@ -235,6 +284,12 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
 
         /*  Typeahead
         ==============================================================*/
+
+        /** 
+         * Autocomplete for the subreddit search
+         * @param {val} string
+         * @return {array}
+         */
         $scope.getSubreddit = function(val) {
             return $http.get('http://www.reddit.com/subreddits/search/.json?', {
                 params: {
@@ -249,12 +304,20 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
                         sub = split[2];
                     if (sub.indexOf(val) != -1) subreddits.push(sub);
                 });
+                console.log(subreddits);
                 return subreddits;
             });
         }
 
         /* Comments
         ==============================================================*/
+
+
+        /** 
+         * Format the comments data received through the Ajax call and sets it to the $scope
+         * @param {data} object
+         * @return {object}
+         */
         $scope.parseComments = function(data) {
             var comments = data[1].data.children;
             $scope.title = data[0].data.children[0].data.title;
@@ -263,6 +326,11 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             return comments;
         }
 
+        /** 
+         * Formats the sub-comments data
+         * @param {comments} object
+         * @return {object}
+         */
         $scope.parseReplies = function(comments) {
             for (var i = 0, l = comments.length - 1; i < l; i++) {
                 if (typeof comments[i].data.replies === 'object') {
@@ -286,6 +354,9 @@ appControllers.controller('Comments', ['$scope', '$http',
         $scope.meta = [];
         $scope.comments = [];
 
+        /** 
+         * Ajax call for the comments
+         */
         $scope.$on('loadComments', function(e, permalink) {
             var winH = $(window).height(),
                 navH = $('#nav').height(),
@@ -293,7 +364,7 @@ appControllers.controller('Comments', ['$scope', '$http',
 
             showCommentsLoader();
 
-            $('#comments').css('height', winH - navH).addClass('showing');
+        $('#comments').css('height', winH - navH).addClass('showing');
 
             $http.get(commentsUrl)
                 .success(function(data, status, headers, config) {
