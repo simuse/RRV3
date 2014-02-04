@@ -1,13 +1,23 @@
 /*	Prototype
 ==============================================================*/
+
+/** 
+ * Get the smallest number in array
+ */
 Array.prototype.min = function() {
     return Math.min.apply(Math, this);
 };
 
+/** 
+ * Get the biggest number in array
+ */
 Array.prototype.max = function() {
     return Math.max.apply(Math, this);
 };
 
+/** 
+ * Get the average of an array
+ */
 Array.prototype.average = function() {
     var l = this.length,
         sum = 0;
@@ -26,14 +36,27 @@ function scrollToTop() {
     window.scrollTo(0, 0);
 }
 
+/** 
+ * Unescape html tags
+ */
 function unescape(input) {
     var e = document.createElement('div');
     e.innerHTML = input;
     return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
 
+function capitaliseEachWord(string) {
+    return string.replace(/\w\S*/g, function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+
 /*	Main Content
 ==============================================================*/
+
+/** 
+ * Display an alert when subreddit does not exist
+ */
 function alertInexistingSub(subreddit) {
     var alert = $('<div class="alert alert-warning"><strong>Error:</strong> The subreddit <strong>"' + subreddit + '"</strong> does not exist.</div>');
     $('#main').hide().prepend(alert).slideDown();
@@ -45,6 +68,9 @@ function alertInexistingSub(subreddit) {
     }, 3000);
 }
 
+/** 
+ * Activate Oembed
+ */
 function activateOembed() {
     $('.oembed').oembed(null, {
         includeHandle: false,
@@ -57,8 +83,11 @@ function activateOembed() {
     });
 }
 
+/** 
+ * Opens all links in a new tab
+ */
 function makeLinksExternal() {
-    $('a', '#main').not('.show-buttons').each(function() {
+    $('a:not(.show-buttons, .clickSub)', '#main').each(function() {
         $(this).click(function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -79,11 +108,18 @@ function showCommentsLoader() {
 
 /*	View / Layout
 ==============================================================*/
+
+/** 
+ * Set the layout
+ */
 function setLayout(layout) {
     if (layout === 'grid') initGrid();
     else if (layout === 'list') initList();
 }
 
+/** 
+ * Init the grid layout with Isotope.js
+ */
 function initGrid() {
     var itemWidth = 200,
         itemMargin = 10,
@@ -104,6 +140,10 @@ function initGrid() {
         .show();
 }
 
+
+/** 
+ * Go back to a list layout
+ */
 function initList() {
     $('.post').width('100%').height('auto');
     $('#main').removeClass('grid').addClass('list');
@@ -114,6 +154,9 @@ function stopIsotope() {
     $('#main').isotope('destroy');
 }
 
+/** 
+ * Reload the grid layout after changing subreddit or page
+ */
 function reloadGrid() {
     var t = window.setInterval(function() {
         var $posts = $('.post');

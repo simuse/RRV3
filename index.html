@@ -6,7 +6,7 @@
 	<meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	
-	<title>Reddit-Roll v3</title>
+	<title>Reddit-Roll</title>
 	
 	<link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="assets/css/main.min.css">
@@ -32,6 +32,9 @@
 					<h4 class="modal-title" id="myModalLabel">Login to Reddit</h4>
 				</div>
 				<div class="modal-body">
+					<div class="alert alert-info">
+						<p>NOTE : This feature does not work yet.</p>
+					</div>
 				<form role="form" id="loginForm">
 					<div class="form-group">
 						<label for="username">Username</label>
@@ -73,9 +76,24 @@
 					<div class="collapse navbar-collapse navbar-left" id="navbar-collapse">
 
 					  	<ul class="nav navbar-nav">
-					  		<li><a href="#" class="alert-nowork">Multireddits</a></li>
+					  		<li class="dropdown">
+					  			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Multireddits <b class="caret"></b></a>
+					  			<ul class="dropdown-menu">
+					  				<li>
+					  					<div class="row">
+					  						<div ng-repeat="(key, value) in multis">
+					  							<span ng-switch on="$index % 3">
+							  						<ul class="list-unstyled col-xs-4">
+							  							<li><a class="multis" ng-click="loadMultis(value)" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{{value | tooltip}}">{{key | multiname}}</a></li>
+							  						</ul>
+					  							</span>
+					  						</div>
+					  					</div>
+					  				</li>
+					  			</ul>
+					  		</li>
 					  		<li>
-					  			<a href="#" class="alert-nowork" id="log" title="Log In" data-toggle="modal" data-target="loginModal"><i class="glyphicon glyphicon-user"></i></a>
+					  			<a href="#" id="log" title="Log In" data-toggle="modal" data-target="loginModal"><i class="glyphicon glyphicon-user"></i></a>
 					  		</li>
 					  		<li>
 					  			<a href="#" title="Toggle View" ng-click="toggleLayout($event)">
@@ -84,7 +102,7 @@
 					  		</li>
 					  	</ul> <!-- /.navbar-nav -->
 
-					  	<form class="navbar-form navbar-left" role="search" ng-submit="findSub()">
+					  	<form class="navbar-form navbar-left" role="search" ng-submit="loadSub(subreddit)">
 							<div class="form-group">
 								<input type="text" class="form-control input-sm" id="subreddit" placeholder="Look for a subreddit" ng-model="subreddit" typeahead="subreddit for subreddit in getSubreddit($viewValue)">
 							</div>
@@ -121,7 +139,7 @@
 					<i ng-switch-when="reddit" class="glyphicon reddit"></i>
 
 					<div class="meta">
-						<strong>{{post.data.subreddit}}</strong> <span class="secondary"> - {{post.data.author}} - {{post.data.score}} points (<span class="ups">{{post.data.ups}}</span>|<span class="downs">{{post.data.downs}}</span>)
+						<a class="clickSub" ng-click="clickSub()"><strong>{{post.data.subreddit}}</strong></a> <span class="secondary"> - {{post.data.author}} - {{post.data.score}} points (<span class="ups">{{post.data.ups}}</span>|<span class="downs">{{post.data.downs}}</span>)
 						<span class="date">{{post.data.created|timeago}}</span></span>
 					</div>
 				</div>

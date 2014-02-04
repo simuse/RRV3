@@ -5,7 +5,8 @@
 var Settings = {
     layout: 'list', // Base layout
     numPosts: 50, // Max number of posts    
-    sortBy: 'new' // Sorting system
+    sortBy: 'new', // Sorting system
+    title: 'Reddit-Roll'
 };
 
 var Reddit = {
@@ -32,11 +33,14 @@ var app = angular.module('app', [
 app.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider
-            .when('/main', {
+            .when('/', {
                 controller: 'FrontPage'
             })
+            .when('/pizza', {
+                template: 'Yeah, pizza !'
+            })
             .otherwise({
-                redirectTo: '/main'
+                redirectTo: '/'
             });
     }
 ]);
@@ -49,7 +53,7 @@ angular.module('filters', [])
 
 /** 
  * Returns a formated date from a timestamp using timeago plugin
- * @param {timestamp} int
+ * @param {int} timestamp
  * @return {string}
  */
 .filter('timeago', function() {
@@ -60,7 +64,7 @@ angular.module('filters', [])
 
 /** 
  * Basic formatting of the comments
- * @param {input} string
+ * @param {string} input
  * @return {string}
  */
 .filter('rendercomment', function() {
@@ -74,6 +78,35 @@ angular.module('filters', [])
             input = input.replace(remove, '');
             return input;
         }
+    }
+})
+
+/** 
+ * Formatting for the multireddits tooltips
+ * @param {array} input
+ * @return {string}
+ */
+.filter('tooltip', function() {
+    return function(input) {
+        var output = '';
+        for (var i = 0, l = input.length; i < l; i++) {
+            output += input[i] + '<br>';
+            if (i >= 12) {
+                return output + '... ' + (l - i) + ' MORE ...';
+            }
+        };
+        return output;
+    }
+})
+
+/** 
+ * Formatting for the multireddits name
+ * @param {string} input
+ * @return {string}
+ */
+.filter('multiname', function() {
+    return function(input) {
+        return capitaliseEachWord(input.split('_').join(' '));
     }
 });
 
@@ -106,7 +139,7 @@ app.directive('domrendered', function() {
  */
 app.directive('showsubcomments', function() {
     return function($scope, $element) {
-        $element.bind('click', function() {
+        $element.on('click', function() {
             var $ul = $element.closest('li').find('ul').first();
             $ul.slideToggle();
             $element.find('.chevron').toggleClass('glyphicon-chevron-down');
@@ -127,6 +160,8 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
     function($scope, $http, $sce) {
 
         $scope.posts = [];
+
+        $scope.multis = multireddits;
 
         /*	Data
 		==============================================================*/
@@ -156,12 +191,24 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
 
         /** 
          * Load a subreddit
+         * @param {string} names of subreddit
          */
-        $scope.findSub = function() {
+        $scope.loadSub = function(sub) {
+            Reddit.subreddit = sub;
             Reddit.after = [];
-            Reddit.subreddit = $scope.subreddit;
             $scope.disablePreviousButton();
             $scope.getPage();
+
+            document.title = sub + ' | ' + Settings.title;
+        }
+
+        /** 
+         * Load multireddits
+         * @param {array} names of subreddits
+         */
+        $scope.loadMultis = function(multis) {
+            var subs = multis.join('+');
+            $scope.loadSub(subs);
         }
 
         /** 
@@ -252,6 +299,10 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             $scope.$broadcast('loadComments', permalink);
         }
 
+        $scope.clickSub = function() {
+            $scope.loadSub(this.post.data.subreddit);
+        }
+
         /** 
          * Toggle the layout between 'list' and 'grid'
          */
@@ -290,7 +341,7 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
          * @param {val} string
          * @return {array}
          */
-        $scope.getSubreddit = function(val) {
+        /*$scope.getSubreddit = function(val) {
             return $http.get('http://www.reddit.com/subreddits/search/.json?', {
                 params: {
                     q: val,
@@ -307,11 +358,10 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
                 console.log(subreddits);
                 return subreddits;
             });
-        }
+        }*/
 
         /* Comments
         ==============================================================*/
-
 
         /** 
          * Format the comments data received through the Ajax call and sets it to the $scope
@@ -364,7 +414,7 @@ appControllers.controller('Comments', ['$scope', '$http',
 
             showCommentsLoader();
 
-        $('#comments').css('height', winH - navH).addClass('showing');
+            $('#comments').css('height', winH - navH).addClass('showing');
 
             $http.get(commentsUrl)
                 .success(function(data, status, headers, config) {
@@ -379,7 +429,6 @@ appControllers.controller('Comments', ['$scope', '$http',
         $scope.closeComments = function() {
             $('#comments').removeClass('showing');
         }
-
     }
 ]);
 
@@ -395,4 +444,6 @@ jQuery(document).ready(function($) {
     $('.alert-nowork').on('click', function() {
         alert('This feature does not work yet :(');
     });
+
+    $('a', '.dropdown-menu').tooltip();
 });

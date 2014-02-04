@@ -17,7 +17,7 @@
 @import 'helpers.less';
 
 /*=============================================================
-	=base
+	$base
 ==============================================================*/
 
 *, *:before, *:after {
@@ -33,7 +33,16 @@ a, input, textarea, button {
 	transition: all 0.3s ease-out;
 }
 
-p a { // Increase clickable area on links / http://joshnh.com/2012/09/06/increasing-the-clickable-area-of-inline-links/
+a, button {
+	cursor: pointer;
+	text-decoration: none;
+	&:hover {
+		text-decoration: none;
+	}
+}
+
+p a { 
+	// Increase clickable area on links / http://joshnh.com/2012/09/06/increasing-the-clickable-area-of-inline-links/
     margin: -.5em;
     padding: .5em;
     position: relative;
@@ -55,7 +64,7 @@ body {
 }
 
 /*=============================================================
-	=header
+	$header
 ==============================================================*/
 header {
 	.navbar-default {
@@ -75,11 +84,27 @@ header {
 		input {
 			width: 200px;
 		}
+		.dropdown-menu {
+			padding: 0;
+			.row {
+				width: 400px;
+				.col-md-4 {
+					padding-right: 0;
+				}
+			}
+			a {
+				display: block;
+				padding: 5px 0 5px 10px ;
+				&:hover {
+					background: #ccc;
+				}
+			}
+		}
 	}
 }
 
 /*=============================================================
-	=primary content
+	$primary content
 ==============================================================*/
 
 #main {
@@ -157,7 +182,7 @@ header {
 }
 
 /*=============================================================
-	=post
+	$post
 ==============================================================*/
 
 .post {
@@ -329,7 +354,7 @@ header {
 }
 
 /*=============================================================
-	=comments
+	$comments
 ==============================================================*/
 #panel-comments {
 	position: relative;
@@ -428,7 +453,7 @@ header {
 }
 
 /*=============================================================
-	=extras
+	$extras
 ==============================================================*/
 
 .ups {
