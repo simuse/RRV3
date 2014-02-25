@@ -19,18 +19,17 @@ var Reddit = {
 ==============================================================*/
 
 var app = angular.module('app', [
-    'ngRoute',
     'filters',
     'ngSanitize',
     'appControllers',
-    'ui.bootstrap'
+    'ui.bootstrap',
 ]);
 
 /*=============================================================
 	Routes
 ==============================================================*/
 
-app.config(['$routeProvider',
+/*app.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider
             .when('/', {
@@ -43,7 +42,7 @@ app.config(['$routeProvider',
                 redirectTo: '/'
             });
     }
-]);
+]);*/
 
 /*=============================================================
 	Filters
@@ -120,6 +119,7 @@ angular.module('filters', [])
  */
 app.directive('domrendered', function() {
     return function() {
+
         var t = window.setInterval(function() {
             if ($('.post').length > 0) {
                 window.clearInterval(t);
@@ -312,11 +312,11 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
             if (Settings.layout === 'list') {
                 Settings.layout = 'grid';
                 setLayout('grid');
-                $target.html('<i class="glyphicon glyphicon-th"></i>');
+                $target.html('<i class="glyphicon glyphicon-th-list"></i>');
             } else {
                 Settings.layout = 'list';
                 setLayout('list');
-                $target.html('<i class="glyphicon glyphicon-th-list"></i>');
+                $target.html('<i class="glyphicon glyphicon-th"></i>');
             }
         }
 
@@ -355,7 +355,7 @@ appControllers.controller('FrontPage', ['$scope', '$http', '$sce',
                         sub = split[2];
                     if (sub.indexOf(val) != -1) subreddits.push(sub);
                 });
-                console.log(subreddits);
+    console.log(subreddits);
                 return subreddits;
             });
         }*/
@@ -437,13 +437,49 @@ appControllers.controller('Comments', ['$scope', '$http',
 ==============================================================*/
 
 jQuery(document).ready(function($) {
+    // Open login modal
     $('#log').on('click', function() {
         $('#loginModal').modal();
     });
 
-    $('.alert-nowork').on('click', function() {
-        alert('This feature does not work yet :(');
+    // Display tooltips
+    $('a[data-toggle="tooltip"], #log').tooltip();
+
+    // Scroll and keyboard nav
+    var currentPost = 0;
+    $(document).scroll(function() {
+        var st = $(window).scrollTop();
+        $('.post').each(function() {
+            if ($(this).offset().top > st) {
+                currentPost = $(this).prop('id').substr(4);
+                return false;
+            }
+        });
     });
 
-    $('a', '.dropdown-menu').tooltip();
+    $(window).keyup(function(e) {
+        var target = e.target.tagName;
+        if (target != 'input') {
+            if (e.keyCode === 40 || e.keyCode === 74) {
+                currentPost++;
+                $('#post' + currentPost).scrollToMe();
+            } else if (e.keyCode === 38 || e.keyCode === 75) {
+                if (currentPost > 0) {
+                    currentPost--;
+                    $('#post' + currentPost).scrollToMe();
+                }
+            }
+        }
+    });
+
+    $.fn.extend({
+        scrollToMe: function(offset) {
+            var b = $(this);
+            offset = offset || -60;
+            $("body").animate({
+                scrollTop: b.offset().top + offset
+            }, 200);
+        }
+    });
+
 });

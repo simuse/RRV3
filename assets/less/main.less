@@ -20,6 +20,14 @@
 	$base
 ==============================================================*/
 
+body {
+	background: #eee;
+	font-family: @font-family;
+	position: relative;
+	-webkit-font-smoothing: antialiased;
+}
+
+
 *, *:before, *:after {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -51,12 +59,6 @@ p a {
 img {
 	width: 100%;
 	height: auto;
-}
-
-body {
-	font-family: @font-family;
-	position: relative;
-	background: #eee;
 }
 
 .btn {
@@ -456,6 +458,10 @@ header {
 	$extras
 ==============================================================*/
 
+.tooltip {
+	min-width: 80px;
+}
+
 .ups {
 	color: @reddit-orange!important;
 }
@@ -463,11 +469,11 @@ header {
 	color: @reddit-blue!important;
 }
 
-.comments-loader, 
-.loader {
+.comments-loader {
 	display: block;
 	height: 2px;
 	position: relative;
+	top: 50px;
 
 	.line {
 		display: block;
@@ -484,9 +490,6 @@ header {
 		-o-animation: loader 3.9s ease-in-out infinite alternate;
 		animation: loader 3.9s ease-in-out infinite alternate;
 	}
-}
-.comments-loader {
-	top: 50px;
 }
 
 @import 'media-queries.less';

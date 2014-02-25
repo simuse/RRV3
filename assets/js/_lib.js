@@ -166,9 +166,6 @@ function reloadGrid() {
             stopIsotope();
             initGrid();
             $('#main').show();
-            setTimeout(function() {
-                $('#main').isotope('reLayout');
-            }, 2000);
         }
     }, 50);
 }
